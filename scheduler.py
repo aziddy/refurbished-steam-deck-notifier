@@ -5,6 +5,7 @@ import time
 import sys
 import os
 from datetime import datetime
+from discord_webhook import DiscordWebhook
 from notifier import main
 
 def setup_args_from_env():
@@ -28,6 +29,22 @@ def setup_args_from_env():
 
     sys.argv = args
 
+def send_startup_notification(webhook_url: str, interval_minutes: int, country_code: str):
+    """Send a Discord notification when the scheduler starts"""
+    if not webhook_url:
+        return
+
+    try:
+        start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
+        webhook = DiscordWebhook(
+            url=webhook_url,
+            content=f"🚀 Steam Deck notifier started!\nCountry: {country_code}\nCheck interval: {interval_minutes} minutes\nStarted at: {start_time}"
+        )
+        webhook.execute()
+        print("Startup notification sent to Discord", flush=True)
+    except Exception as e:
+        print(f"Failed to send startup notification: {e}", flush=True)
+
 def run_with_interval(interval_minutes: int):
     """Run the notifier at specified intervals
 
@@ -38,6 +55,11 @@ def run_with_interval(interval_minutes: int):
     print(f"Check interval: {interval_minutes} minutes", flush=True)
     print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
     print("-" * 50, flush=True)
+
+    # Send startup notification
+    webhook_url = os.getenv('WEBHOOK_URL', '')
+    country_code = os.getenv('COUNTRY_CODE', 'DE')
+    send_startup_notification(webhook_url, interval_minutes, country_code)
 
     while True:
         try:
