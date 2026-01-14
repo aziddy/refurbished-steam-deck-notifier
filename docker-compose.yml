@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  steam-deck-notifier:
+    build: .
+    container_name: steam-deck-notifier
+    environment:
+      - CSV_DIR=${CSV_DIR}
+      - COUNTRY_CODE=${COUNTRY_CODE}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - ROLE_MAPPING=${ROLE_MAPPING}
+      - CHECK_INTERVAL_MINUTES=${CHECK_INTERVAL_MINUTES}
+    volumes:
+      - ./logs:/app/logs
+      # Uncomment the line below if you have a role_mapping.json file
+      # - ./role_mapping.json:/app/role_mapping.json:ro
+    restart: unless-stopped

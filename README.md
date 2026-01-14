@@ -18,14 +18,24 @@ This script checks the availability of refurbished Steam Decks on Steam and send
 * **Optional CSV logging** for availability statistics
 * **Configurable Discord role pings** via JSON file
 * **Command-line arguments** for easy configuration
-* **Prebuilt executables** for users who don’t want to install Python
+* **Docker support with built-in scheduler** for continuous monitoring
+* **Prebuilt executables** for users who don't want to install Python
 
-## 📋 Requirements (for Python script users)
+## 📋 Requirements
 
-### Install Dependencies
+### For Docker Users (Recommended)
+* Docker
+* Docker Compose
 
-Ensure you have **Python 3.x** installed. Then, install the required dependencies using:
+### For Python Script Users
 
+Ensure you have **Python 3.8+** installed. Then, install the required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Or manually:
 ```bash
 pip install requests discord-webhook
 ```
@@ -68,11 +78,66 @@ python steam_deck_checker.py --webhook-url "https://discord.com/api/webhooks/YOU
 ### Full Example
 
 ```bash
-python steam_deck_checker.py \
+python notifier.py \
   --country-code US \
   --webhook-url "https://discord.com/api/webhooks/YOUR_WEBHOOK" \
   --role-mapping roles.json \
   --csv-dir csv-logs
+```
+
+### Option 3: Run with Docker (Recommended for Continuous Monitoring)
+
+Docker provides the easiest way to run the notifier continuously with automatic restarts.
+
+#### Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/oblassgit/refurbished-steam-deck-notifier.git
+   cd refurbished-steam-deck-notifier
+   ```
+
+2. **Configure your settings**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your webhook URL and preferences
+   ```
+
+3. **Optional: Set up role mapping**
+   ```bash
+   cp role_mapping.json.example role_mapping.json
+   # Edit role_mapping.json with your Discord role IDs
+   ```
+
+4. **Build and run**
+   ```bash
+   docker-compose up -d
+   ```
+
+#### Docker Configuration
+
+Edit the [.env](.env) file to configure:
+
+* `WEBHOOK_URL`: Your Discord webhook URL (**required**)
+* `COUNTRY_CODE`: Country code (default: `DE`)
+* `CSV_DIR`: Directory for logs (default: `/app/logs`)
+* `ROLE_MAPPING`: Path to role mapping file (default: `/app/role_mapping.json`)
+* `CHECK_INTERVAL_MINUTES`: How often to check availability in minutes (default: `5`)
+
+#### Docker Commands
+
+```bash
+# Start the container
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
+
+# Rebuild after changes
+docker-compose up -d --build
 ```
 
 ### Discord Role Mapping (Optional)
@@ -125,9 +190,15 @@ When using `--csv-dir`, the script writes one CSV file for each day to the speci
 
 ## ⏲️ Running Periodically
 
-This script/executable **does not run continuously**. Use cron (Linux/macOS) or Task Scheduler (Windows) to automate execution.
+### With Docker (Recommended)
 
-### Example (Linux/macOS)
+The Docker setup includes a built-in scheduler that automatically runs checks at your configured interval. Simply set `CHECK_INTERVAL_MINUTES` in your [.env](.env) file and the container will handle the rest.
+
+### Without Docker
+
+If running the script manually, use cron (Linux/macOS) or Task Scheduler (Windows) to automate execution.
+
+#### Example (Linux/macOS)
 
 Edit your crontab with:
 
